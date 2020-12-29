@@ -1,0 +1,46 @@
+[{
+  title : 'Pivot Table',
+  properties : [{
+    name : 'id',
+    label : 'ID',
+    type : 'hidden'
+  },
+    {
+      name : 'customId',
+      label : 'Custom ID',
+      type : 'textfield',
+      regex_validation : '^[a-zA-Z0-9_]+$',
+      validation_message : 'Invalid'
+    },
+    {
+      name : 'label',
+      label : 'Label',
+      type : 'textfield',
+      required : 'True',
+      value : 'List'
+    },
+    {
+      name : 'formId',
+      label : 'Form Id',
+      type : 'selectbox',
+      required : 'True'
+    },
+    {
+      name : 'tableName',
+      label : 'Table Name',
+      type : 'selectbox',
+      required : 'True'
+    },
+    {
+      name : 'pivotRowId',
+      label : 'Pivot Row',
+      type : 'selectbox',
+      required : 'True'
+    },{
+      name : 'pivotColuumn]Id',
+      label : 'Pivot Coloumn',
+      type : 'selectbox',
+      required : 'True'
+    }
+    }]
+}]
