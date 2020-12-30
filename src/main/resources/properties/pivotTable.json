@@ -1,10 +1,6 @@
 [{
   title : 'Pivot Table',
-  properties : [{
-    name : 'id',
-    label : 'ID',
-    type : 'hidden'
-  },
+  properties : [
     {
       name : 'customId',
       label : 'Custom ID',
@@ -22,25 +18,26 @@
     {
       name : 'formId',
       label : 'Form Id',
-      type : 'selectbox',
-      required : 'True'
+      type : 'textfield',
+      required : 'true'
     },
     {
       name : 'tableName',
       label : 'Table Name',
-      type : 'selectbox',
-      required : 'True'
+      type : 'textfield',
+      required : 'true'
     },
     {
       name : 'pivotRowId',
       label : 'Pivot Row',
-      type : 'selectbox',
-      required : 'True'
-    },{
-      name : 'pivotColuumn]Id',
+      type : 'textfield',
+      required : 'true'
+    },
+    {
+      name : 'pivotColoumnId',
       label : 'Pivot Coloumn',
-      type : 'selectbox',
-      required : 'True'
+      type : 'textfield',
+      required : 'true'
     }
-    }]
+    ]
 }]

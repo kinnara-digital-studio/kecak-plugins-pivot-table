@@ -13,8 +13,8 @@ import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
 import org.joget.apps.userview.model.Userview;
 import org.joget.apps.userview.model.UserviewMenu;
+import org.joget.commons.util.LogUtil;
 import org.joget.commons.util.StringUtil;
-import org.joget.mofiz.model.CommonUtil;
 import org.joget.workflow.util.WorkflowUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -62,19 +62,19 @@ public class DataListPivotTable extends UserviewMenu {
 
     @Override
     public String getJspPage(){
-        return getJspPage("userview/plugin/datalist.jsp", "userview/plugin/form.jsp", "userview/plugin/unauthorized.jsp");
+        return getJspPage("userview/plugin/datalist.jsp");
     }
 
-    public String getJspPage(String listFile, String formFile, String unauthorizedFile) {
-        /*String mode = getRequestParameterString("_mode");
+    public String getJspPage(String listFile) {
+        String mode = getRequestParameterString("_mode");
         if ("add".equals(mode) || "edit".equals(mode)) {
             this.setProperty("customHeader", getPropertyString(mode + "-customHeader"));
             this.setProperty("customFooter", getPropertyString(mode + "-customFooter"));
             this.setProperty("messageShowAfterComplete", getPropertyString(mode + "-messageShowAfterComplete"));
-            return this.handleForm(formFile,unauthorizedFile);
+            // this.handleForm(formFile,unauthorizedFile);
         }
         this.setProperty("customHeader", getPropertyString("list-customHeader"));
-        this.setProperty("customFooter", getPropertyString("list-customFooter"));*/
+        this.setProperty("customFooter", getPropertyString("list-customFooter"));
         this.viewList();
         return listFile;
     }
@@ -151,6 +151,7 @@ public class DataListPivotTable extends UserviewMenu {
         Object[] arguments = new Object[]{appId, appVersion, appId, appVersion, appId, appVersion};
         String json = AppUtil.readPluginResource(getClass().getName(), "/properties/pivotTable.json", arguments, true,null);
         return json;
+        //return AppUtil.readPluginResource(getClass().getName(), "/properties/pivotTable.json", null, true, null);
     }
 
     protected DataList getDataList() throws BeansException {
@@ -177,11 +178,12 @@ public class DataListPivotTable extends UserviewMenu {
         DataList dataList = new DataList();
         FormDataDao formDataDao = (FormDataDao) AppUtil.getApplicationContext().getBean("formDataDao");
         FormRowSet rowSetData = formDataDao.find( getPropertyString("formId"),getPropertyString("tableName"), null, null, null, false, null, null);
-        if(CommonUtil.isNotNullOrEmpty(rowSetData)){
+        if(rowSetData!=null){
             for(FormRow rowData : rowSetData){
-                dataList.addBinderProperty("Kolom1",rowData.getProperty(getPropertyString("coloumnName")));
-                dataList.addBinderProperty("Kolom2",rowData.getProperty(getPropertyString("tableName")));
+                dataList.addBinderProperty("Kolom1",rowData.getProperty(getPropertyString("pivotColoumnId")));
+                dataList.addBinderProperty("Kolom2",rowData.getProperty(getPropertyString("pivotRowId")));
             }
+            LogUtil.info(getClass().getName(),dataList.toString());
             return  dataList;
         }
         return null;
