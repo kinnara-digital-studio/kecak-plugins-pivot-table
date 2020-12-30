@@ -43,6 +43,7 @@ public class DataListPivotTable extends UserviewMenu {
         return true;
     }
 
+
     @Override
     public String getDecoratedMenu() {
         DataList dataList;
