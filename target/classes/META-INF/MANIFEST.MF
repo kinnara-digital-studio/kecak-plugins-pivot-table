@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1609238359792
+Bnd-LastModified: 1609294932835
 Build-Jdk: 1.8.0_252
 Built-By: ramba
 Bundle-Activator: com.kinnara.kecakplugins.pivottable.Activator
