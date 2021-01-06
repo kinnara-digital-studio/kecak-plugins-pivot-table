@@ -1,5 +1,6 @@
 package com.kinnara.kecakplugins.pivottable;
 
+import org.joget.plugin.base.PluginManager;
 import org.joget.apps.app.dao.DatalistDefinitionDao;
 import org.joget.apps.app.model.AppDefinition;
 import org.joget.apps.app.model.DatalistDefinition;
@@ -18,9 +19,19 @@ import org.joget.commons.util.StringUtil;
 import org.joget.workflow.util.WorkflowUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.ui.Model;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONException;
+import org.joget.apps.datalist.model.DataListCollection;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DataListPivotTable extends UserviewMenu {
     @Override
@@ -35,7 +46,26 @@ public class DataListPivotTable extends UserviewMenu {
 
     @Override
     public String getRenderPage() {
-        return null;
+
+        Map<String, Object> dataModel = new HashMap<String, Object>();
+
+        ApplicationContext appContext    = AppUtil.getApplicationContext();
+        PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
+
+        /*DataList dataList = getDataList();
+        if (dataList != null) {
+            dataModel.put("data",dataList);
+        }*/
+
+        List<Test> data = Stream
+                .of(new Test(1, "ramba"), new Test(2, "Pitter"), new Test(3, "Muslim"))
+                .collect(Collectors.toList());
+
+        dataModel.put("data", data);
+
+        //masih error ngerender page
+        String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTable.ftl",null);
+        return htmlContent;
     }
 
     @Override
@@ -46,65 +76,15 @@ public class DataListPivotTable extends UserviewMenu {
 
     @Override
     public String getDecoratedMenu() {
-        DataList dataList;
-        String menuItem = null;
-        boolean showRowCount = Boolean.valueOf(getPropertyString("rowCount"));
-        if (showRowCount && (dataList = getDataList()) != null) {
-            int rowCount = dataList.getTotal();
-            String label = getPropertyString("label");
-            if (label != null) {
-                label = StringUtil.stripHtmlRelaxed(label);
-            }
-            menuItem = "<a href=\"" + getUrl() + "\" class=\"menu-link default\"><span>" + label + "</span> <span class='rowCount'>(" + rowCount + ")</span></a>";
-        }
-        return menuItem;
+        return null;
     }
 
-    @Override
-    public String getJspPage(){
-        return getJspPage("userview/plugin/datalist.jsp");
-    }
 
-    public String getJspPage(String listFile) {
-        String mode = getRequestParameterString("_mode");
-        if ("add".equals(mode) || "edit".equals(mode)) {
-            this.setProperty("customHeader", getPropertyString(mode + "-customHeader"));
-            this.setProperty("customFooter", getPropertyString(mode + "-customFooter"));
-            this.setProperty("messageShowAfterComplete", getPropertyString(mode + "-messageShowAfterComplete"));
-            // this.handleForm(formFile,unauthorizedFile);
-        }
-        this.setProperty("customHeader", getPropertyString("list-customHeader"));
-        this.setProperty("customFooter", getPropertyString("list-customFooter"));
-        this.viewList();
-        return listFile;
-    }
-
-    protected void viewList() {
+    /*protected void viewList() {
         try {
             DataList dataList = getDataList();
             if (dataList != null) {
-                /*dataList.setActionPosition(getPropertyString("buttonPosition"));
-                dataList.setSelectionType(getPropertyString("selectionType"));
-                dataList.setCheckboxPosition(getPropertyString("checkboxPosition"));
-                dataList = addDatalistButtons(dataList);
-                DataListActionResult ac = dataList.getActionResult();
-                if (ac != null) {
-                    if (ac.getMessage() != null && !ac.getMessage().isEmpty()) {
-                        this.setAlertMessage(ac.getMessage());
-                    }
-                    if (ac.getType() != null && "REDIRECT".equals(ac.getType()) && ac.getUrl() != null && !ac.getUrl().isEmpty()) {
-                        if ("REFERER".equals(ac.getUrl())) {
-                            HttpServletRequest request = WorkflowUtil.getHttpServletRequest();
-                            if (request != null && request.getHeader("Referer") != null) {
-                                this.setRedirectUrl(request.getHeader("Referer"));
-                            } else {
-                                this.setRedirectUrl("REFERER");
-                            }
-                        } else {
-                            this.setRedirectUrl(ac.getUrl());
-                        }
-                    }
-                }*/
+                LogUtil.info(getClass().getName(),"datalist: "+dataList);
                 this.setProperty("dataList", dataList);
             } else {
                 this.setProperty("error", ("Data List \"" + getPropertyString("datalistId") + "\" not exist."));
@@ -117,7 +97,7 @@ public class DataListPivotTable extends UserviewMenu {
             message = message + "\r\n<pre class=\"stacktrace\">" + out.getBuffer() + "</pre>";
             this.setProperty("error", message);
         }
-    }
+    }*/
     @Override
     public String getName() {
         return "Pivot Table";
@@ -154,30 +134,18 @@ public class DataListPivotTable extends UserviewMenu {
         //return AppUtil.readPluginResource(getClass().getName(), "/properties/pivotTable.json", null, true, null);
     }
 
-    protected DataList getDataList() throws BeansException {
-        /*ApplicationContext ac = AppUtil.getApplicationContext();
-        AppService appService = (AppService)ac.getBean("appService");
-        DataListService dataListService = (DataListService)ac.getBean("dataListService");
-        DatalistDefinitionDao datalistDefinitionDao = (DatalistDefinitionDao)ac.getBean("datalistDefinitionDao");
-        DatalistDefinition datalistDefinition = datalistDefinitionDao.loadById(getPropertyString("datalistId"), appService.getAppDefinition(getRequestParameterString("appId"), getRequestParameterString("appVersion")));
-        if (datalistDefinition != null) {
-            DataList dataList = dataListService.fromJson(datalistDefinition.getJson());
-            if (getPropertyString(Userview.USERVIEW_KEY_NAME) != null && getPropertyString(Userview.USERVIEW_KEY_NAME).trim().length() > 0) {
-                dataList.addBinderProperty(Userview.USERVIEW_KEY_NAME, getPropertyString(Userview.USERVIEW_KEY_NAME));
-            }
-            if (getKey() != null && getKey().trim().length() > 0) {
-                dataList.addBinderProperty(Userview.USERVIEW_KEY_VALUE, getKey());
-            }
-            return dataList;
+    /*protected DataList getDataList() throws BeansException {
+        AppDefinition appDef = AppUtil.getCurrentAppDefinition();
+        String formId = getPropertyString("formId");
+        String tableName="";
+        if (appDef != null &&  formId != null) {
+            AppService appService = (AppService) AppUtil.getApplicationContext().getBean("appService");
+            tableName = appService.getFormTableName(appDef, formId);
         }
-        return null;
-    }*/
-        //ApplicationContext ac = AppUtil.getApplicationContext();
-        //AppService appService = (AppService)ac.getBean("appService");
-        //DataListService dataListService = (DataListService)ac.getBean("dataListService");
         DataList dataList = new DataList();
         FormDataDao formDataDao = (FormDataDao) AppUtil.getApplicationContext().getBean("formDataDao");
-        FormRowSet rowSetData = formDataDao.find( getPropertyString("formId"),getPropertyString("tableName"), null, null, null, false, null, null);
+        FormRowSet rowSetData = formDataDao.find(formId,tableName, null, null, null, false, null, null);
+        LogUtil.info(getClass().getName(),"tableName:"+tableName);
         if(rowSetData!=null){
             for(FormRow rowData : rowSetData){
                 dataList.addBinderProperty("Kolom1",rowData.getProperty(getPropertyString("pivotColoumnId")));
@@ -188,5 +156,5 @@ public class DataListPivotTable extends UserviewMenu {
         }
         return null;
 
-    }
+    }*/
 }

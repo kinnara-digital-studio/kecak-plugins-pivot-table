@@ -16,16 +16,12 @@
       value : 'List'
     },
     {
-      name : 'formId',
-      label : 'Form Id',
-      type : 'textfield',
-      required : 'true'
-    },
-    {
-      name : 'tableName',
-      label : 'Table Name',
-      type : 'textfield',
-      required : 'true'
+      "name" : 'formId',
+      label : 'Form ID',
+      type : 'selectbox',
+      required : 'true',
+      options_ajax : '[CONTEXT_PATH]/web/json/console/app[APP_PATH]/forms/options',
+      url : '[CONTEXT_PATH]/web/property/json[APP_PATH]/getPropertyOptions'
     },
     {
       name : 'pivotRowId',
