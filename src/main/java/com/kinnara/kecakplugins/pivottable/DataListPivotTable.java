@@ -17,6 +17,9 @@ import org.joget.apps.userview.model.UserviewMenu;
 import org.joget.commons.util.LogUtil;
 import org.joget.commons.util.StringUtil;
 import org.joget.workflow.util.WorkflowUtil;
+import org.kecak.apps.userview.model.AceUserviewMenu;
+import org.kecak.apps.userview.model.AdminLteUserviewMenu;
+import org.kecak.apps.userview.model.BootstrapUserviewTheme;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ui.Model;
@@ -33,7 +36,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DataListPivotTable extends UserviewMenu {
+public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu, AdminLteUserviewMenu {
     @Override
     public String getCategory() {
         return "Kecak";
@@ -46,26 +49,28 @@ public class DataListPivotTable extends UserviewMenu {
 
     @Override
     public String getRenderPage() {
+        try {
+            Map<String, Object> dataModel = new HashMap<String, Object>();
 
-        Map<String, Object> dataModel = new HashMap<String, Object>();
-
-        ApplicationContext appContext    = AppUtil.getApplicationContext();
-        PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
+            ApplicationContext appContext    = AppUtil.getApplicationContext();
+            PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
 
         /*DataList dataList = getDataList();
         if (dataList != null) {
             dataModel.put("data",dataList);
         }*/
 
-        List<Test> data = Stream
-                .of(new Test(1, "ramba"), new Test(2, "Pitter"), new Test(3, "Muslim"))
-                .collect(Collectors.toList());
+            List<Test> data = Stream
+                    .of(new Test(1, "ramba"), new Test(2, "Pitter"), new Test(3, "Muslim"))
+                    .collect(Collectors.toList());
 
-        dataModel.put("data", data);
-
-        //masih error ngerender page
-        String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTable.ftl",null);
-        return htmlContent;
+            dataModel.put("data", data);
+            String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTable.ftl",null);
+            return htmlContent;
+        }catch (Exception e) {
+            LogUtil.error(getClassName(), e, "------" + e.getMessage());
+            return null;
+        }
     }
 
     @Override
@@ -132,6 +137,57 @@ public class DataListPivotTable extends UserviewMenu {
         String json = AppUtil.readPluginResource(getClass().getName(), "/properties/pivotTable.json", arguments, true,null);
         return json;
         //return AppUtil.readPluginResource(getClass().getName(), "/properties/pivotTable.json", null, true, null);
+    }
+
+    @Override
+    public String getAceJspPage(BootstrapUserviewTheme bootstrapUserviewTheme) {
+        return null;
+    }
+
+    @Override
+    public String getAceRenderPage() {
+        try {
+            Map<String, Object> dataModel = new HashMap<String, Object>();
+
+            ApplicationContext appContext    = AppUtil.getApplicationContext();
+            PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
+
+        /*DataList dataList = getDataList();
+        if (dataList != null) {
+            dataModel.put("data",dataList);
+        }*/
+
+            List<Test> data = Stream
+                    .of(new Test(1, "ramba"), new Test(2, "Pitter"), new Test(3, "Muslim"))
+                    .collect(Collectors.toList());
+
+            dataModel.put("data", data);
+            String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTableAceAdmin.ftl",null);
+            return htmlContent;
+        }catch (Exception e) {
+            LogUtil.error(getClassName(), e, "------" + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public String getAceDecoratedMenu() {
+        return null;
+    }
+
+    @Override
+    public String getAdminLteJspPage(BootstrapUserviewTheme bootstrapUserviewTheme) {
+        return null;
+    }
+
+    @Override
+    public String getAdminLteRenderPage() {
+        return null;
+    }
+
+    @Override
+    public String getAdminLteDecoratedMenu() {
+        return null;
     }
 
     /*protected DataList getDataList() throws BeansException {
