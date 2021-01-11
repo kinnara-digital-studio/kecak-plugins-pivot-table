@@ -20,6 +20,7 @@ import org.joget.workflow.util.WorkflowUtil;
 import org.kecak.apps.userview.model.AceUserviewMenu;
 import org.kecak.apps.userview.model.AdminLteUserviewMenu;
 import org.kecak.apps.userview.model.BootstrapUserviewTheme;
+import org.mockito.internal.matchers.Null;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ui.Model;
@@ -33,10 +34,13 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu, AdminLteUserviewMenu {
+    private WeakHashMap<String, DataList> datalistCache = new WeakHashMap<>();
+
     @Override
     public String getCategory() {
         return "Kecak";
@@ -55,10 +59,6 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
             ApplicationContext appContext    = AppUtil.getApplicationContext();
             PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
 
-        /*DataList dataList = getDataList();
-        if (dataList != null) {
-            dataModel.put("data",dataList);
-        }*/
 
             List<Test> data = Stream
                     .of(new Test(1, "ramba"), new Test(2, "Pitter"), new Test(3, "Muslim"))
@@ -130,13 +130,13 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
     @Override
     public String getPropertyOptions() {
-        AppDefinition appDef = AppUtil.getCurrentAppDefinition();
+        /*AppDefinition appDef = AppUtil.getCurrentAppDefinition();
         String appId = appDef.getId();
         String appVersion = appDef.getVersion().toString();
         Object[] arguments = new Object[]{appId, appVersion, appId, appVersion, appId, appVersion};
         String json = AppUtil.readPluginResource(getClass().getName(), "/properties/pivotTable.json", arguments, true,null);
-        return json;
-        //return AppUtil.readPluginResource(getClass().getName(), "/properties/pivotTable.json", null, true, null);
+        return json;*/
+        return AppUtil.readPluginResource(getClass().getName(), "/properties/pivotTable.json", null, true, null);
     }
 
     @Override
@@ -152,16 +152,81 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
             ApplicationContext appContext    = AppUtil.getApplicationContext();
             PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
 
-        /*DataList dataList = getDataList();
-        if (dataList != null) {
-            dataModel.put("data",dataList);
-        }*/
+        //DataList dataList = getDataList();
+        DataListCollection<Map<String, Object>> resultListRow = new DataListCollection<>();
+            DataListCollection<Map<String, Object>> resultListColoumn = new DataListCollection<>();
+        FormDataDao formDataDao = (FormDataDao) AppUtil.getApplicationContext().getBean("formDataDao");
+        FormRowSet rowSetData = formDataDao.find("daftarBuah","m_buah", null, null, null, false, null, null);
 
-            List<Test> data = Stream
+        if(rowSetData!=null) {
+            String rows = "";
+            //String coloumn = "";
+            LogUtil.info(getClass().getName(),"data"+rowSetData.toString());
+            for (FormRow rowData : rowSetData) {
+                HashMap<String, Object> dataTable = new HashMap<String, Object>();
+                if (!rows.contains(rowData.getProperty("namaBuah"))) {
+                    dataTable.put("rows", rowData.getProperty("namaBuah"));
+                    //dataList.
+                    rows += rowData.getProperty("namaBuah");
+                    rows += ";";
+                }
+                /*if (!coloumn.contains(rowData.getProperty("rasaBuah"))) {
+                    dataTable.put("coloumn", rowData.getProperty("rasaBuah"));
+                    coloumn += rowData.getProperty("rasaBuah");
+                    coloumn += ";";
+                }*/
+                    /*for(FormRow rows : rowSetData) {
+                        dataList.addBinderProperty("coloumn", rows.getProperty(getPropertyString("pivotColoumnId")));
+
+                    }*/
+                resultListRow.add(dataTable);
+            }
+            String coloumn = "";
+            for (FormRow rowDataC : rowSetData) {
+
+
+                /*if (!rows.contains(rowDataC.getProperty("namaBuah"))) {
+                    dataTable.put("rows", rowDataC.getProperty("namaBuah"));
+                    //dataList.
+                    rows += rowDataC.getProperty("namaBuah");
+                    rows += ";";
+                }*/
+                if (!coloumn.contains(rowDataC.getProperty("rasaBuah")) && rowDataC.getProperty("rasaBuah")!=null && rowDataC.getProperty("rasaBuah")!="") {
+                    HashMap<String, Object> dataTableC = new HashMap<String, Object>();
+                    dataTableC.put("coloumn", rowDataC.getProperty("rasaBuah"));
+                    coloumn += rowDataC.getProperty("rasaBuah");
+
+                    coloumn += ";";
+                    resultListColoumn.add(dataTableC);
+                }
+                    /*for(FormRow rows : rowSetData) {
+                        dataList.addBinderProperty("coloumn", rows.getProperty(getPropertyString("pivotColoumnId")));
+
+                    }*/
+
+            }
+        }
+
+        //dataList.setRows();
+        //if (dataList != null) {
+            //dataModel.put("data",dataList);
+        //}
+
+            /*List<Test> data = Stream
                     .of(new Test(1, "ramba"), new Test(2, "Pitter"), new Test(3, "Muslim"))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList());*/
 
-            dataModel.put("data", data);
+           /* List<DataList> data = Stream
+                    .of(resultList)
+                    .collect(Collectors.toList());*/
+
+            dataModel.put("dataRow", resultListRow.getList());
+            dataModel.put("dataColoumn", resultListColoumn.getList());
+            LogUtil.info(getClassName(), "dataList: "+resultListColoumn.getList());
+            //dataModel.put("total",dataList.getSize());
+            dataModel.put("row","Nama Buah");
+            dataModel.put("coloum","Rasa Buah");
+            dataModel.put("total",resultListRow.getList().size());
             String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTableAceAdmin.ftl",null);
             return htmlContent;
         }catch (Exception e) {
@@ -190,27 +255,61 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
         return null;
     }
 
-    /*protected DataList getDataList() throws BeansException {
+    protected DataList getDataList()  {
         AppDefinition appDef = AppUtil.getCurrentAppDefinition();
-        String formId = getPropertyString("formId");
+       /* String formId = getPropertyString("formId");
         String tableName="";
         if (appDef != null &&  formId != null) {
             AppService appService = (AppService) AppUtil.getApplicationContext().getBean("appService");
             tableName = appService.getFormTableName(appDef, formId);
-        }
+        }*/
         DataList dataList = new DataList();
         FormDataDao formDataDao = (FormDataDao) AppUtil.getApplicationContext().getBean("formDataDao");
-        FormRowSet rowSetData = formDataDao.find(formId,tableName, null, null, null, false, null, null);
-        LogUtil.info(getClass().getName(),"tableName:"+tableName);
+        /*FormRowSet rowSetData = formDataDao.find(formId,tableName, null, null, null, false, null, null);
+        LogUtil.warn(getClass().getName(),"tableName:"+tableName);*/
+        //FormDataDao formDataDao = (FormDataDao) AppUtil.getApplicationContext().getBean("formDataDao");
+        FormRowSet rowSetData = formDataDao.find("daftarBuah","m_buah", null, null, null, false, null, null);
         if(rowSetData!=null){
+            String rows ="";
+            String coloumn ="";
             for(FormRow rowData : rowSetData){
-                dataList.addBinderProperty("Kolom1",rowData.getProperty(getPropertyString("pivotColoumnId")));
-                dataList.addBinderProperty("Kolom2",rowData.getProperty(getPropertyString("pivotRowId")));
+                if(!rows.contains(rowData.getProperty("namaBuah"))) {
+                    dataList.addBinderProperty("rows", rowData.getProperty("namaBuah"));
+                    //dataList.
+                    rows+=rowData.getProperty("namaBuah");
+                    rows+=";";
+                }
+                if(!coloumn.contains(rowData.getProperty("rasaBuah"))) {
+                    dataList.addBinderProperty("coloumn", rowData.getProperty("rasaBuah"));
+                    coloumn+=rowData.getProperty("rasaBuah");
+                    coloumn+=";";
+                }
+                    /*for(FormRow rows : rowSetData) {
+                        dataList.addBinderProperty("coloumn", rows.getProperty(getPropertyString("pivotColoumnId")));
+
+                    }*/
             }
-            LogUtil.info(getClass().getName(),dataList.toString());
+            //LogUtil.warn(getClass().getName(),dataList.toString());
             return  dataList;
         }
         return null;
+    }
 
+   /* private DataList getDataList(String datalistId) {
+        ApplicationContext ac     = AppUtil.getApplicationContext();
+        AppDefinition      appDef = AppUtil.getCurrentAppDefinition();
+
+        if (datalistCache.containsKey(datalistId))
+            return datalistCache.get(datalistId);
+
+        DataListService       dataListService       = (DataListService) ac.getBean("dataListService");
+        DatalistDefinitionDao datalistDefinitionDao = (DatalistDefinitionDao) ac.getBean("datalistDefinitionDao");
+        DatalistDefinition    datalistDefinition    = (DatalistDefinition) datalistDefinitionDao.loadById(datalistId, appDef);
+        if (datalistDefinition != null) {
+            DataList dataList = dataListService.fromJson(datalistDefinition.getJson());
+            datalistCache.put(datalistId, dataList);
+            return dataList;
+        }
+        return null;
     }*/
 }
