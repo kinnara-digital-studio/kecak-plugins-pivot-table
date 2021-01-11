@@ -154,21 +154,58 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
         //DataList dataList = getDataList();
         DataListCollection<Map<String, Object>> resultListRow = new DataListCollection<>();
-            DataListCollection<Map<String, Object>> resultListColoumn = new DataListCollection<>();
+        DataListCollection<Map<String, Object>> resultListColoumn = new DataListCollection<>();
+        DataListCollection<Map<String, Object>> resultListValue = new DataListCollection<>();
         FormDataDao formDataDao = (FormDataDao) AppUtil.getApplicationContext().getBean("formDataDao");
         FormRowSet rowSetData = formDataDao.find("daftarBuah","m_buah", null, null, null, false, null, null);
 
         if(rowSetData!=null) {
             String rows = "";
-            //String coloumn = "";
-            LogUtil.info(getClass().getName(),"data"+rowSetData.toString());
-            for (FormRow rowData : rowSetData) {
-                HashMap<String, Object> dataTable = new HashMap<String, Object>();
-                if (!rows.contains(rowData.getProperty("namaBuah"))) {
-                    dataTable.put("rows", rowData.getProperty("namaBuah"));
+            String coloumn = "";
+            for (FormRow rowDataC : rowSetData) {
+                /*if (!rows.contains(rowDataC.getProperty("namaBuah"))) {
+                    dataTable.put("rows", rowDataC.getProperty("namaBuah"));
                     //dataList.
-                    rows += rowData.getProperty("namaBuah");
+                    rows += rowDataC.getProperty("namaBuah");
                     rows += ";";
+                }*/
+                if (!coloumn.contains(rowDataC.getProperty("namaBuah")) && rowDataC.getProperty("namaBuah")!=null && rowDataC.getProperty("namaBuah")!="") {
+                    HashMap<String, Object> dataTableC = new HashMap<String, Object>();
+                    dataTableC.put("coloumn", rowDataC.getProperty("namaBuah"));
+                    coloumn += rowDataC.getProperty("namaBuah");
+                    coloumn += ";";
+                    resultListColoumn.add(dataTableC);
+                }
+                    /*for(FormRow rows : rowSetData) {
+                        dataList.addBinderProperty("coloumn", rows.getProperty(getPropertyString("pivotColoumnId")));
+
+                    }*/
+
+            }
+            for (FormRow rowData : rowSetData) {
+                if (!rows.contains(rowData.getProperty("rasaBuah")) && rowData.getProperty("rasaBuah")!=null && rowData.getProperty("rasaBuah")!="")
+                {
+                    HashMap<String, Object> dataTable = new HashMap<String, Object>();
+                    dataTable.put("rows", rowData.getProperty("rasaBuah"));
+                    String[] coloum = coloumn.split(";");
+                    //int n =1;
+                    for(String coloumnData : coloum){
+                        HashMap<String, Object> dataValue = new HashMap<String, Object>();
+                        int value = 0;
+                        for(FormRow rowValue : rowSetData){
+                            if(rowValue.getProperty("namaBuah").equalsIgnoreCase(coloumnData) && rowValue.getProperty("rasaBuah").equalsIgnoreCase(rowData.getProperty("rasaBuah"))){
+                                value++;
+                            }
+                        }
+                        dataValue.put("row"+rowData.getProperty("rasaBuah"),value);
+                        if(dataValue!=null) {
+                            resultListValue.add(dataValue);
+                        }
+                        //n++;
+                    }
+                    rows += rowData.getProperty("rasaBuah");
+                    rows += ";";
+                    resultListRow.add(dataTable);
                 }
                 /*if (!coloumn.contains(rowData.getProperty("rasaBuah"))) {
                     dataTable.put("coloumn", rowData.getProperty("rasaBuah"));
@@ -179,32 +216,8 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
                         dataList.addBinderProperty("coloumn", rows.getProperty(getPropertyString("pivotColoumnId")));
 
                     }*/
-                resultListRow.add(dataTable);
             }
-            String coloumn = "";
-            for (FormRow rowDataC : rowSetData) {
 
-
-                /*if (!rows.contains(rowDataC.getProperty("namaBuah"))) {
-                    dataTable.put("rows", rowDataC.getProperty("namaBuah"));
-                    //dataList.
-                    rows += rowDataC.getProperty("namaBuah");
-                    rows += ";";
-                }*/
-                if (!coloumn.contains(rowDataC.getProperty("rasaBuah")) && rowDataC.getProperty("rasaBuah")!=null && rowDataC.getProperty("rasaBuah")!="") {
-                    HashMap<String, Object> dataTableC = new HashMap<String, Object>();
-                    dataTableC.put("coloumn", rowDataC.getProperty("rasaBuah"));
-                    coloumn += rowDataC.getProperty("rasaBuah");
-
-                    coloumn += ";";
-                    resultListColoumn.add(dataTableC);
-                }
-                    /*for(FormRow rows : rowSetData) {
-                        dataList.addBinderProperty("coloumn", rows.getProperty(getPropertyString("pivotColoumnId")));
-
-                    }*/
-
-            }
         }
 
         //dataList.setRows();
@@ -222,10 +235,12 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
             dataModel.put("dataRow", resultListRow.getList());
             dataModel.put("dataColoumn", resultListColoumn.getList());
-            LogUtil.info(getClassName(), "dataList: "+resultListColoumn.getList());
+            dataModel.put("dataValue",resultListValue.getList());
+            LogUtil.info(getClassName(), "dataValue: "+resultListValue.getList());
+            //LogUtil.info(getClassName(), "dataList: "+resultListColoumn.getList());
             //dataModel.put("total",dataList.getSize());
-            dataModel.put("row","Nama Buah");
-            dataModel.put("coloum","Rasa Buah");
+            dataModel.put("row","Rasa Buah");
+            dataModel.put("coloum","Nama Buah");
             dataModel.put("total",resultListRow.getList().size());
             String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTableAceAdmin.ftl",null);
             return htmlContent;

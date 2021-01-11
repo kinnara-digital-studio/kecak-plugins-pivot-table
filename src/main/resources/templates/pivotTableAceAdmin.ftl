@@ -16,15 +16,17 @@
 				    <th></th>
 				</tr>
 			</thead>
+
 			<tbody>
 			    <#list dataRow as dt>
                     <tr>
                         <td rowspan = "1" colspan ="2">${dt.rows}</td>
-                            <#list dataColoumn as dt>
-            		            <td></td>
-            		        </#list>
+                                <#list dataValue as dv>
+                                    <td>${dv.rows1}</td>
+            		             </#list>
             		    <td>${total}</td>
                     </tr>
                 </#list>
             </tbody>
+        </table>
 </div>
