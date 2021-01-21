@@ -226,7 +226,7 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
     public String getAceRenderPage() {
         try {
             Map<String, Object> dataModel = new HashMap<String, Object>();
-
+            String contextPath = AppUtil.getRequestContextPath();
             ApplicationContext appContext    = AppUtil.getApplicationContext();
             PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
             String formDefId    =  getPropertyString("formDefId");
