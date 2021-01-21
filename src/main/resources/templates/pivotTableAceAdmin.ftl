@@ -22,9 +22,9 @@
                     <tr>
                         <td rowspan = "1" colspan ="2">${dt.rows}</td>
                                 <#list dataValue as dv>
-                                    <td>${dv.rows1}</td>
+                                    <td>${dv.rowManis}</td>
             		             </#list>
-            		    <td>${total}</td>
+            		    <td>${totalBTC}</td>
                     </tr>
                 </#list>
             </tbody>
