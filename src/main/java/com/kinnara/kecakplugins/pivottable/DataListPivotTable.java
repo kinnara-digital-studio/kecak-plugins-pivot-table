@@ -55,7 +55,6 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
     public String getRenderPage() {
         try {
             Map<String, Object> dataModel = new HashMap<String, Object>();
-
             ApplicationContext appContext    = AppUtil.getApplicationContext();
             PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
             String formDefId    =  getPropertyString("formDefId");
@@ -67,83 +66,37 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
             }
 
             //DataList dataList = getDataList();
-            DataListCollection<Map<String, Object>> resultListRow = new DataListCollection<>();
-            DataListCollection<Map<String, Object>> resultListColoumn = new DataListCollection<>();
-            DataListCollection<Map<String, Object>> resultListValue = new DataListCollection<>();
+            DataListCollection<Map<String, Object>> resultList = new DataListCollection<>();
             FormDataDao formDataDao = (FormDataDao) AppUtil.getApplicationContext().getBean("formDataDao");
             FormRowSet rowSetData = formDataDao.find(formDefId,tableName, null, null, null, false, null, null);
 
-            String rowId = getPropertyString("pivotRowId");
+            //String rowId = getPropertyString("pivotRowId");
             String coloumnId = getPropertyString("pivotColoumnId");
-            if(rowSetData!=null) {
-                String rows = "";
-                String coloumn = "";
-                for (FormRow rowDataC : rowSetData) {
-                /*if (!rows.contains(rowDataC.getProperty("namaBuah"))) {
-                    dataTable.put("rows", rowDataC.getProperty("namaBuah"));
-                    //dataList.
-                    rows += rowDataC.getProperty("namaBuah");
-                    rows += ";";
-                }*/
-                    if (!coloumn.contains(rowDataC.getProperty(coloumnId))) {
-                        if(rowDataC.getProperty(coloumnId)!=null && rowDataC.getProperty(coloumnId)!="") {
-                            HashMap<String, Object> dataTableC = new HashMap<String, Object>();
-                            dataTableC.put("coloumn", rowDataC.getProperty(coloumnId));
-                            coloumn += rowDataC.getProperty(coloumnId);
-                            coloumn += ";";
-                            resultListColoumn.add(dataTableC);
-                        }
-                    }
-                    /*for(FormRow rows : rowSetData) {
-                        dataList.addBinderProperty("coloumn", rows.getProperty(getPropertyString("pivotColoumnId")));
 
-                    }*/
-
-                }
-                int total = 0;
-                for (FormRow rowData : rowSetData) {
-                    if (!rows.contains(rowData.getProperty(rowId)) && rowData.getProperty(rowId)!=null && rowData.getProperty(rowId)!="")
-                    {
-                        HashMap<String, Object> dataTable = new HashMap<String, Object>();
-                        dataTable.put("rows", rowData.getProperty(rowId));
-                        String[] coloum = coloumn.split(";");
-                        //int n =1;
-                        for(String coloumnData : coloum){
-                            HashMap<String, Object> dataValue = new HashMap<String, Object>();
-                            int value = 0;
-                            for(FormRow rowValue : rowSetData){
-                                if(rowValue.getProperty(coloumnId).equalsIgnoreCase(coloumnData) && rowValue.getProperty(rowId).equalsIgnoreCase(rowData.getProperty(rowId))){
-                                    value++;
-                                    if(rowData.getProperty(rowId).equalsIgnoreCase(coloumnData)) {
-                                        total++;
-                                    }
-                                    LogUtil.info(getClass().getName(),"Total"+total);
-                                    /*LogUtil.info(getClass().getName(),"Total"+total);*/
-                                }
-                            }
-                            //if(rowData.getProperty("rasaBuah").equalsIgnoreCase("manis")) {
-                            dataValue.put("row" + rowData.getProperty(rowId), value);
-                            resultListValue.add(dataValue);
-                            LogUtil.info(getClass().getName(),"Total"+total);
-                        }
-
-                        dataModel.put("totalBTC",total);
-                        rows += rowData.getProperty(rowId);
-                        rows += ";";
-                        resultListRow.add(dataTable);
-                    }
-                }
-            }
-            dataModel.put("dataRow", resultListRow.getList());
-            dataModel.put("dataColoumn", resultListColoumn.getList());
-            dataModel.put("dataValue",resultListValue.getList());
-            LogUtil.info(getClassName(), "dataValue: "+resultListValue.getList());
-            //LogUtil.info(getClassName(), "dataList: "+resultListColoumn.getList());
-            //dataModel.put("total",dataList.getSize());
-            dataModel.put("row",rowId);
-            dataModel.put("coloum",coloumnId);
-            dataModel.put("total",resultListRow.getList().size());
-            String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTable.ftl",null);
+           /* data.put("label",getPropertyString("pivotRowId"));
+            resultList.add(data);*/
+           String[] tempCol = coloumnId.split(";");
+           for(String coloumnName : tempCol){
+               HashMap<String, Object> data = new HashMap<String, Object>();
+               data.put("label",coloumnName);
+               resultList.add(data);
+               if(rowSetData!=null){
+                   for(FormRow rowData : rowSetData){
+                       HashMap<String, Object> datarow = new HashMap<String, Object>();
+                       if(rowData.getProperty(coloumnName)!=null) {
+                           datarow.put("value", rowData.getProperty(coloumnName));
+                       }else {
+                           datarow.put("value", "");
+                       }
+                       resultList.add(datarow);
+                   }
+               }
+           }
+            dataModel.put("data",resultList);
+            LogUtil.info(getClassName(), "data: "+resultList.getList()); //Masih error saat ingin memasukkan list ini ke js
+            //LogUtil.info(getClassName(), "dataValue: "+resultList.getList());
+            /*dataModel.put("total",resultListRow.getList().size());*/
+            String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTableAceAdmin.ftl",null);
             return htmlContent;
         }catch (Exception e) {
             LogUtil.error(getClassName(), e, "------" + e.getMessage());
@@ -239,6 +192,7 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
             //DataList dataList = getDataList();
             DataListCollection<Map<String, Object>> resultListRow = new DataListCollection<>();
+            DataListCollection<Map<String, Object>> resultList = new DataListCollection<>();
             DataListCollection<Map<String, Object>> resultListColoumn = new DataListCollection<>();
             DataListCollection<Map<String, Object>> resultListValue = new DataListCollection<>();
             FormDataDao formDataDao = (FormDataDao) AppUtil.getApplicationContext().getBean("formDataDao");
@@ -246,32 +200,28 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
             String rowId = getPropertyString("pivotRowId");
             String coloumnId = getPropertyString("pivotColoumnId");
+            HashMap<String, Object> data = new HashMap<String, Object>();
+            data.put("label",getPropertyString("pivotRowId"));
+            data.put("label",getPropertyString("pivotColoumnId"));
+            resultList.add(data);
             if(rowSetData!=null) {
-                String rows = "";
-                String coloumn = "";
-                for (FormRow rowDataC : rowSetData) {
-                /*if (!rows.contains(rowDataC.getProperty("namaBuah"))) {
-                    dataTable.put("rows", rowDataC.getProperty("namaBuah"));
-                    //dataList.
-                    rows += rowDataC.getProperty("namaBuah");
-                    rows += ";";
-                }*/
-                if (!coloumn.contains(rowDataC.getProperty(coloumnId))) {
-                    if(rowDataC.getProperty(coloumnId)!=null && rowDataC.getProperty(coloumnId)!="") {
-                        HashMap<String, Object> dataTableC = new HashMap<String, Object>();
-                        dataTableC.put("coloumn", rowDataC.getProperty(coloumnId));
-                        coloumn += rowDataC.getProperty(coloumnId);
-                        coloumn += ";";
-                        resultListColoumn.add(dataTableC);
+                //String rows = "";
+                //String coloumn = "";
+                for (FormRow rowData : rowSetData) {
+                        if(rowData.getProperty(rowId)!=null) {
+                            data.put("value", rowData.getProperty(rowId));
+                        }else {
+                            data.put("value", "");
+                        }
+                        if(rowData.getProperty(coloumnId)!=null) {
+                            data.put("value",rowData.getProperty(coloumnId));
+                        }else {
+                            data.put("value","");
+                        }
+                        resultList.add(data);
                     }
                 }
-                    /*for(FormRow rows : rowSetData) {
-                        dataList.addBinderProperty("coloumn", rows.getProperty(getPropertyString("pivotColoumnId")));
-
-                    }*/
-
-            }
-            int total = 0;
+           /* int total = 0;
             for (FormRow rowData : rowSetData) {
                 if (!rows.contains(rowData.getProperty(rowId)) && rowData.getProperty(rowId)!=null && rowData.getProperty(rowId)!="")
                 {
@@ -287,57 +237,35 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
                         for(FormRow rowValue : rowSetData){
                             if(rowValue.getProperty(coloumnId).equalsIgnoreCase(coloumnData) && rowValue.getProperty(rowId).equalsIgnoreCase(rowData.getProperty(rowId))){
                                 value++;
-                                /*if(rowData.getProperty("rasaBuah").equalsIgnoreCase("manis")) {
+                                *//*if(rowData.getProperty("rasaBuah").equalsIgnoreCase("manis")) {
                                     total++;
-                                }*/
+                                }*//*
                                 //LogUtil.info(getClass().getName(),"Total"+total);
                             }
                         }
-                        //if(rowData.getProperty("rasaBuah").equalsIgnoreCase("manis")) {
                             dataValue.put("row" + rowData.getProperty(rowId), value);
                             resultListValue.add(dataValue);
-                       // }
                     }
                     dataModel.put("totalManis",total);
                     rows += rowData.getProperty(rowId);
                     rows += ";";
                     resultListRow.add(dataTable);
                 }
-                /*if (!coloumn.contains(rowData.getProperty("rasaBuah"))) {
-                    dataTable.put("coloumn", rowData.getProperty("rasaBuah"));
-                    coloumn += rowData.getProperty("rasaBuah");
-                    coloumn += ";";
-                }*/
-                    /*for(FormRow rows : rowSetData) {
-                        dataList.addBinderProperty("coloumn", rows.getProperty(getPropertyString("pivotColoumnId")));
-
-                    }*/
             }
 
-        }
+        }*/
 
-        //dataList.setRows();
-        //if (dataList != null) {
-            //dataModel.put("data",dataList);
-        //}
-
-            /*List<Test> data = Stream
-                    .of(new Test(1, "ramba"), new Test(2, "Pitter"), new Test(3, "Muslim"))
-                    .collect(Collectors.toList());*/
-
-           /* List<DataList> data = Stream
-                    .of(resultList)
-                    .collect(Collectors.toList());*/
-
-            dataModel.put("dataRow", resultListRow.getList());
-            dataModel.put("dataColoumn", resultListColoumn.getList());
-            dataModel.put("dataValue",resultListValue.getList());
-            LogUtil.info(getClassName(), "dataValue: "+resultListValue.getList());
+            //dataModel.put("dataRow", resultListRow.getList());
+           // dataModel.put("dataColoumn", resultListColoumn.getList());
+            //ataModel.put("dataValue",resultListValue.getList());
+            //LogUtil.info(getClassName(), "dataValue: "+resultListValue.getList());
             //LogUtil.info(getClassName(), "dataList: "+resultListColoumn.getList());
             //dataModel.put("total",dataList.getSize());
-            dataModel.put("row",rowId);
-            dataModel.put("coloum",coloumnId);
-            dataModel.put("total",resultListRow.getList().size());
+            /*dataModel.put("row",rowId);
+            dataModel.put("coloum",coloumnId);*/
+            dataModel.put("data",resultList);
+            LogUtil.info(getClassName(), "data: "+resultList.getList());
+            /*dataModel.put("total",resultListRow.getList().size());*/
             String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTableAceAdmin.ftl",null);
             return htmlContent;
         }catch (Exception e) {
