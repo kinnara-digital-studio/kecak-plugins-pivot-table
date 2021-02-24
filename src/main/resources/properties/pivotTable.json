@@ -1,32 +1,39 @@
-[{
-  title : 'Pivot Table',
-  properties : [
-    {
-      name : 'customId',
-      label : 'Custom ID',
-      type : 'textfield',
-      regex_validation : '^[a-zA-Z0-9_]+$',
-      validation_message : 'Invalid'
-    },
-    {
-      name : 'label',
-      label : 'Label',
-      type : 'textfield',
-      required : 'True',
-      value : 'List'
-    },
-    {
-      name: 'dataListId',
-      label: 'DataList',
-      type: 'selectbox',
-      required: 'true',
-      options_ajax: '[CONTEXT_PATH]/web/json/console/app[APP_PATH]/datalist/options'
-    },
-    {
-      name : 'pivotColoumnId',
-      label : 'Pivot Coloumn',
-      type : 'textfield',
-      required : 'true'
-    }
+[
+  {
+    "title": "Pivot Table",
+    "properties": [
+      {
+        "name": "id",
+        "label": "Id",
+        "type": "hidden"
+      },
+      {
+        "name": "customId",
+        "label": "Custom ID",
+        "type": "textfield",
+        "regex_validation": "^[a-zA-Z0-9_]+$",
+        "validation_message": "Invalid"
+      },
+      {
+        "name": "label",
+        "label": "Label",
+        "type": "textfield",
+        "required": "True",
+        "value": "List"
+      },
+      {
+        "name": "dataListId",
+        "label": "DataList",
+        "type": "selectbox",
+        "required": "true",
+        "options_ajax": "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/datalist/options"
+      },
+      {
+        "name": "pivotColoumnId",
+        "label": "Pivot Column",
+        "type": "textfield",
+        "required": "true"
+      }
     ]
-}]
+  }
+]
