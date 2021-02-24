@@ -1,6 +1,10 @@
-<link href="${request.contextPath}/plugin/com.kinnara.kecakplugins.pivottable.DataListPivotTable/css/pivot.min.css" rel="stylesheet" type="text/css" />
-<script type="text/javascript" src="${request.contextPath}/plugin/com.kinnara.kecakplugins.pivottable.DataListPivotTable/js/pivot.min.js"></script>
-
+<link href="${request.contextPath}/plugin/com.kinnara.kecakplugins.pivottable.DataListPivotTable/css/pivot_custom.min.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="${request.contextPath}/plugin/com.kinnara.kecakplugins.pivottable.DataListPivotTable/js/pivot_custom.min.js"></script>
+<style>
+form {
+    margin-bottom:.5em;
+}
+</style>
 <#if showDataListFilter >
 	<form name="filters_${dataListId}" id="filters_${dataListId}" action="?" method="POST">
 	    <div class="filters">
