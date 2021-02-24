@@ -29,7 +29,7 @@
         "options_ajax": "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/datalist/options"
       },
       {
-        "name": "pivotColoumnId",
+        "name": "columnData",
         "label": "Pivot Column",
         "type": "textfield",
         "required": "true"

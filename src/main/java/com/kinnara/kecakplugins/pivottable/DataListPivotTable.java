@@ -39,8 +39,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu, AdminLteUserviewMenu, Declutter {
-    private WeakHashMap<String, DataList> datalistCache = new WeakHashMap<>();
-
     @Override
     public String getCategory() {
         return "Kecak";
@@ -54,91 +52,7 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
     @Override
     public String getRenderPage() {
         LogUtil.info(getClass().getName(),"getRenderPage");
-//        try {
-//            Map<String, Object> dataModel = new HashMap<String, Object>();
-//            ApplicationContext appContext    = AppUtil.getApplicationContext();
-//            PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
-//            String formDefId    =  getPropertyString("formDefId");
-//            String tableName    =   "";
-//            AppDefinition appDef = AppUtil.getCurrentAppDefinition();
-//            if (appDef != null && formDefId != null) {
-//                AppService appService = (AppService) AppUtil.getApplicationContext().getBean("appService");
-//                tableName = appService.getFormTableName(appDef, formDefId);
-//            }
-//
-//            //DataList dataList = getDataList();
-//            DataListCollection<Map<String, Object>> resultList = new DataListCollection<>();
-//            FormDataDao formDataDao = (FormDataDao) AppUtil.getApplicationContext().getBean("formDataDao");
-//            FormRowSet rowSetData = formDataDao.find(formDefId,tableName, null, null, null, false, null, null);
-//
-//            //String rowId = getPropertyString("pivotRowId");
-//            String coloumnId = getPropertyString("pivotColoumnId");
-//
-//           /* data.put("label",getPropertyString("pivotRowId"));
-//            resultList.add(data);*/
-//           String[] tempCol = coloumnId.split(";");
-//           for(String coloumnName : tempCol){
-//               HashMap<String, Object> data = new HashMap<String, Object>();
-//               data.put("label",coloumnName);
-//               resultList.add(data);
-//               if(rowSetData!=null){
-//                   for(FormRow rowData : rowSetData){
-//                       HashMap<String, Object> datarow = new HashMap<String, Object>();
-//                       if(rowData.getProperty(coloumnName)!=null) {
-//                           datarow.put("value", rowData.getProperty(coloumnName));
-//                       }else {
-//                           datarow.put("value", "");
-//                       }
-//                       resultList.add(datarow);
-//                   }
-//               }
-//           }
-//            dataModel.put("data",resultList);
-//            LogUtil.info(getClassName(), "data: "+resultList.getList()); //Masih error saat ingin memasukkan list ini ke js
-//            //LogUtil.info(getClassName(), "dataValue: "+resultList.getList());
-//            /*dataModel.put("total",resultListRow.getList().size());*/
-//            String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTableAceAdmin.ftl",null);
-//            return htmlContent;
-//        }catch (Exception e) {
-//            LogUtil.error(getClassName(), e, "------" + e.getMessage());
-//            return null;
-//        }
-
-        Map<String, Object> dataModel = new HashMap<>();
-
-        ApplicationContext appContext    = AppUtil.getApplicationContext();
-        PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
-
-        DataList dataList = getDataList(getPropertyString("dataListId"));
-
-        if (dataList != null) {
-            getCollectFilters(dataList, ((Map<String, Object>) getRequestParameters()));
-            JSONArray data = getRowsAsJson(dataList);
-
-            // use datalist's primary key if label field not specified
-            if (getPropertyString("labelField") == null || getPropertyString("labelField").isEmpty())
-                setProperty("labelField", dataList.getBinder().getPrimaryKeyColumnName());
-
-            dataModel.put("data", data);
-            LogUtil.info(getClassName(),"data ["+data+"]");
-        }
-
-        DataListColumn[] columns = dataList.getColumns();
-        Comparator<DataListColumn> comparator = Comparator.comparing(DataListColumn::getName);
-
-        Arrays.sort(columns, comparator);
-        DataListColumn column = new DataListColumn();
-        for (Object o : (Object[]) getProperty("valueFields")) {
-            Map<String, String> row = (Map<String, String>) o;
-
-            column.setName(row.get("field"));
-            int index = Arrays.binarySearch(columns, column, comparator);
-            row.put("label", index >= 0 ? columns[index].getLabel() : row.get("field"));
-        }
-
-        dataModel.put("column",column);
-        String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTableAceAdmin.ftl",null);
-        return htmlContent;
+        return getRenderPage("/templates/pivotTable.ftl");
     }
 
     @Override
@@ -146,31 +60,11 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
         return true;
     }
 
-
     @Override
     public String getDecoratedMenu() {
         return null;
     }
 
-
-    /*protected void viewList() {
-        try {
-            DataList dataList = getDataList();
-            if (dataList != null) {
-                LogUtil.info(getClass().getName(),"datalist: "+dataList);
-                this.setProperty("dataList", dataList);
-            } else {
-                this.setProperty("error", ("Data List \"" + getPropertyString("datalistId") + "\" not exist."));
-            }
-        }
-        catch (Exception ex) {
-            StringWriter out = new StringWriter();
-            ex.printStackTrace(new PrintWriter(out));
-            String message = ex.toString();
-            message = message + "\r\n<pre class=\"stacktrace\">" + out.getBuffer() + "</pre>";
-            this.setProperty("error", message);
-        }
-    }*/
     @Override
     public String getName() {
         return "Pivot Table";
@@ -201,20 +95,15 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
         return AppUtil.readPluginResource(getClass().getName(), "/properties/pivotTable.json", null, true, null);
     }
 
-
-    private DataList getDataList(String datalistId) {
+    protected DataList getDataList(String datalistId) {
         ApplicationContext ac     = AppUtil.getApplicationContext();
         AppDefinition      appDef = AppUtil.getCurrentAppDefinition();
-
-        if (datalistCache.containsKey(datalistId))
-            return datalistCache.get(datalistId);
 
         DataListService       dataListService       = (DataListService) ac.getBean("dataListService");
         DatalistDefinitionDao datalistDefinitionDao = (DatalistDefinitionDao) ac.getBean("datalistDefinitionDao");
         DatalistDefinition    datalistDefinition    = (DatalistDefinition) datalistDefinitionDao.loadById(datalistId, appDef);
         if (datalistDefinition != null) {
             DataList dataList = dataListService.fromJson(datalistDefinition.getJson());
-            datalistCache.put(datalistId, dataList);
             return dataList;
         }
         return null;
@@ -264,6 +153,16 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
     @Override
     public String getAceRenderPage() {
         LogUtil.info(getClass().getName(),"getAceRenderPage");
+        return getRenderPage("/templates/pivotTable.ftl");
+    }
+
+    /**
+     * Render page using template
+     *
+     * @param templatePath Path to FTL template file
+     * @return
+     */
+    protected String getRenderPage(String templatePath) {
         Map<String, Object> dataModel = new HashMap<>();
 
         ApplicationContext appContext    = AppUtil.getApplicationContext();
@@ -279,13 +178,15 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
             if (getPropertyString("labelField") == null || getPropertyString("labelField").isEmpty())
                 setProperty("labelField", dataList.getBinder().getPrimaryKeyColumnName());
 
+            dataModel.put("columnData", getPropertyString("columnData"));
+            dataModel.put("columns", getColumns(dataList));
             dataModel.put("data", data);
             LogUtil.info(getClassName(),"data ["+data+"]");
 
             dataModel.put("dataListId", dataList.getId());
         }
 
-        String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/pivotTableAceAdmin.ftl",null);
+        String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), templatePath,null);
         return htmlContent;
     }
 
@@ -386,6 +287,12 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
                 .map(row -> formatRow(dataList, row))
 
                 // collect as JSON
+                .collect(JSONCollectors.toJSONArray());
+    }
+
+    protected JSONArray getColumns(DataList dataList) {
+        return Arrays.stream(dataList.getColumns())
+                .map(DataListColumn::getName)
                 .collect(JSONCollectors.toJSONArray());
     }
 }
