@@ -8,26 +8,21 @@
         <div id="output"></div>
     </div>
 </div>
-
 <script>
-    let arrData = [];
-    <#list data as dt>
-    <#if myOptionalVar??>
-        let label = ${dt.label}
-     </#if>
-    </#list>
-    arrData.push(label)
-    $.pivotUtilities.tipsData = arrData;
-</script>
+ $(function(){
+        $("#output").pivotUI(
+            [
+                {color: "blue", shape: "circle",type:"Taram"},
+                {color: "red", shape: "triangle",type:"Bla Bla"}
+            ],
+            {
+                rows: ["color"],
+                cols: ["shape","type"],
+            }
+        );
+ });
 
-<script type="text/javascript">
-$("#output").pivotUI(
-  $.pivotUtilities.tipsData, {
-    rows: [],
-    cols: [],
-    vals: [],
-    aggregatorName: "",
-    rendererName: ""
-  });
-</script>
+    console.log('${dataListId}');
+    console.log(${data});
 
+</script>
