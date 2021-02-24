@@ -176,7 +176,7 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
             // use datalist's primary key if label field not specified
             if (getPropertyString("labelField") == null || getPropertyString("labelField").isEmpty())
-                setProperty("labelField", dataList.getBinder().getPrimaryKeyColumnName());
+                setProperty("labe   lField", dataList.getBinder().getPrimaryKeyColumnName());
 
 //            dataModel.put("columnData", getPropertyString("columnData"));
 //            dataModel.put("columns", getColumns(dataList));
@@ -184,6 +184,19 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
             LogUtil.info(getClassName(),"data ["+data+"]");
 
             dataModel.put("dataListId", dataList.getId());
+
+            // filter template
+            List<String> filterTemplates = new ArrayList<String>();
+
+            Pattern pagePattern = Pattern.compile("id='d-[0-9]+-p'|id='d-[0-9]+-ps'");
+            for(String filterTemplate : dataList.getFilterTemplates()) {
+                if(!pagePattern.matcher(filterTemplate).find()) {
+                    filterTemplates.add(filterTemplate);
+                }
+            }
+
+            dataModel.put("filterTemplates", filterTemplates.toArray(new String[0]));
+            dataModel.put("showDataListFilter", dataList.getFilters().length > 0);
         }
 
         String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), templatePath,null);
