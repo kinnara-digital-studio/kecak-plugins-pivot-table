@@ -178,8 +178,8 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
             if (getPropertyString("labelField") == null || getPropertyString("labelField").isEmpty())
                 setProperty("labelField", dataList.getBinder().getPrimaryKeyColumnName());
 
-            dataModel.put("columnData", getPropertyString("columnData"));
-            dataModel.put("columns", getColumns(dataList));
+//            dataModel.put("columnData", getPropertyString("columnData"));
+//            dataModel.put("columns", getColumns(dataList));
             dataModel.put("data", data);
             LogUtil.info(getClassName(),"data ["+data+"]");
 
