@@ -15,6 +15,14 @@
         "validation_message": "Invalid"
       },
       {
+        "name": "elementName",
+        "label": "@@pivotTable.elementName@@",
+        "type": "textfield",
+        "required": "True",
+        "regex_validation": "^[a-zA-Z0-9_]+$",
+        "validation_message": "Invalid"
+      },
+      {
         "name": "label",
         "label": "@@pivotTable.label@@",
         "type": "textfield",

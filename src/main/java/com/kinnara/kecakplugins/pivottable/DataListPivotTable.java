@@ -155,7 +155,8 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
         PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
 
         DataList dataList = getDataList(getPropertyString("dataListId"));
-
+        String elementName = getPropertyString("elementName");
+        dataModel.put("elementName",elementName);
         if (dataList != null) {
             getCollectFilters(dataList, ((Map<String, Object>) getRequestParameters()));
             JSONArray data = getRowsAsJson(dataList);

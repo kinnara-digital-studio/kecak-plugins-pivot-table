@@ -22,7 +22,7 @@ form {
 
 <div class="row">
     <div class="col-md-12">
-        <div id="output"></div>
+        <div id="${elementName!}"></div>
     </div>
 </div>
 <script>
@@ -39,11 +39,11 @@ form {
                var configobject = JSON.parse(config);
                configobject.onRefresh = saveState; // Save when page refresh
 
-               $("#output").pivotUI( // Load with saved state
+               $("#${elementName!}").pivotUI( // Load with saved state
                        data, configobject
                        );
            } else { // If not found any saved state lets save it
-               $("#output").pivotUI(
+               $("#${elementName!}").pivotUI(
                        data,
                        {
                            renderers: renderers,
@@ -65,5 +65,5 @@ form {
            }
 
      });
-
+    console.log(${elementName!});
 </script>
