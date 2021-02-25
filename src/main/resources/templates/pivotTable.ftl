@@ -27,30 +27,27 @@ form {
 </div>
 <script>
      $(function(){
-       // var data=${data!};
-       // $("#output").pivotUI(${data!});
+         var renderers = $.extend($.pivotUtilities.renderers, $.pivotUtilities.c3_renderers, $.pivotUtilities.export_renderers); // Initialize Pivot Tabel Config
 
-         var renderers = $.extend($.pivotUtilities.renderers, $.pivotUtilities.c3_renderers, $.pivotUtilities.export_renderers); // Typical pivottable init stuff...
+           var data = ${data!}; // Call Data (JSON)
 
-           var data = ${data!};; // Load the data from wherever you want...
-
-           // We store the state against key 'pivotdatakey'
-           // here we are getting saved state from LocalStorage...
+           // store the state against key 'pivotdatakey'
+           // get saved state from LocalStorage...
            var config = localStorage.getItem('pivotdatakey');
 
            if (config) { // If a saved state found in LocalStorage, then load it
-               var configobject = JSON.parse(config); // Make it an object
-               configobject.onRefresh = saveState; // Add callback function for onRefresh
+               var configobject = JSON.parse(config);
+               configobject.onRefresh = saveState; // Save when page refresh
 
                $("#output").pivotUI( // Load with saved state
                        data, configobject
                        );
-           } else { // State not found in LocalStorage. So create without a saved state
+           } else { // If not found any saved state lets save it
                $("#output").pivotUI(
                        data,
                        {
                            renderers: renderers,
-                           onRefresh: saveState // Add the same callback function here.
+                           onRefresh: saveState
                        }
                );
            }
@@ -68,8 +65,5 @@ form {
            }
 
      });
-
-    console.log('${dataListId!}');
-    console.log(${data!});
 
 </script>
