@@ -2,37 +2,23 @@ package com.kinnara.kecakplugins.pivottable;
 
 import com.kinnarastudio.commons.Declutter;
 import com.kinnarastudio.commons.jsonstream.JSONCollectors;
-import org.joget.apps.datalist.model.*;
-import org.joget.apps.form.service.FormUtil;
-import org.joget.plugin.base.PluginManager;
 import org.joget.apps.app.dao.DatalistDefinitionDao;
 import org.joget.apps.app.model.AppDefinition;
 import org.joget.apps.app.model.DatalistDefinition;
-import org.joget.apps.app.service.AppService;
 import org.joget.apps.app.service.AppUtil;
+import org.joget.apps.datalist.model.*;
 import org.joget.apps.datalist.service.DataListService;
-import org.joget.apps.form.dao.FormDataDao;
-import org.joget.apps.form.model.FormRow;
-import org.joget.apps.form.model.FormRowSet;
-import org.joget.apps.userview.model.Userview;
+import org.joget.apps.form.service.FormUtil;
 import org.joget.apps.userview.model.UserviewMenu;
 import org.joget.commons.util.LogUtil;
-import org.joget.commons.util.StringUtil;
-import org.joget.workflow.util.WorkflowUtil;
+import org.joget.plugin.base.PluginManager;
+import org.json.JSONArray;
 import org.kecak.apps.userview.model.AceUserviewMenu;
 import org.kecak.apps.userview.model.AdminLteUserviewMenu;
 import org.kecak.apps.userview.model.BootstrapUserviewTheme;
-import org.mockito.internal.matchers.Null;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.ui.Model;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONException;
 
 import javax.annotation.Nonnull;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -67,7 +53,7 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
     @Override
     public String getName() {
-        return "Pivot Table";
+        return getLabel() + getVersion();
     }
 
     @Override
@@ -92,7 +78,7 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
     @Override
     public String getPropertyOptions() {
-        return AppUtil.readPluginResource(getClass().getName(), "/properties/pivotTable.json", null, true, null);
+        return AppUtil.readPluginResource(getClass().getName(), "/properties/pivotTable.json", null, true, "/messages/pivotTable");
     }
 
     protected DataList getDataList(String datalistId) {
@@ -101,7 +87,7 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
         DataListService       dataListService       = (DataListService) ac.getBean("dataListService");
         DatalistDefinitionDao datalistDefinitionDao = (DatalistDefinitionDao) ac.getBean("datalistDefinitionDao");
-        DatalistDefinition    datalistDefinition    = (DatalistDefinition) datalistDefinitionDao.loadById(datalistId, appDef);
+        DatalistDefinition    datalistDefinition    = datalistDefinitionDao.loadById(datalistId, appDef);
         if (datalistDefinition != null) {
             DataList dataList = dataListService.fromJson(datalistDefinition.getJson());
             return dataList;
@@ -174,12 +160,6 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
             getCollectFilters(dataList, ((Map<String, Object>) getRequestParameters()));
             JSONArray data = getRowsAsJson(dataList);
 
-            // use datalist's primary key if label field not specified
-            if (getPropertyString("labelField") == null || getPropertyString("labelField").isEmpty())
-                setProperty("labe   lField", dataList.getBinder().getPrimaryKeyColumnName());
-
-//            dataModel.put("columnData", getPropertyString("columnData"));
-//            dataModel.put("columns", getColumns(dataList));
             dataModel.put("data", data);
             LogUtil.info(getClassName(),"data ["+data+"]");
 
