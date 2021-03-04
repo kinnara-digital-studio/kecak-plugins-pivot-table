@@ -1,33 +1,40 @@
 <link href="${request.contextPath}/plugin/com.kinnara.kecakplugins.pivottable.DataListPivotTable/css/pivot_custom.min.css" rel="stylesheet" type="text/css" />
+<script src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>
 <script type="text/javascript" src="${request.contextPath}/plugin/com.kinnara.kecakplugins.pivottable.DataListPivotTable/js/pivot_custom.min.js"></script>
+
+<script type="text/javascript" src="${request.contextPath}/plugin/com.kinnara.kecakplugins.pivottable.DataListPivotTable/js/plotly_renderers.min.js"></script>
 <style>
 form {
     margin-bottom:.5em;
 }
 </style>
-<#if showDataListFilter >
-	<form name="filters_${dataListId}" id="filters_${dataListId}" action="?" method="POST">
-	    <div class="filters">
-	        <#list filterTemplates! as template>
-	            <span class="filter-cell">
-	                ${template}
-	            </span>
-	        </#list>
-	         <span class="filter-cell">
-	             <input type="submit" value="Show"/>
-	         </span>
-	    </div>
-	</form>
-</#if>
-
-<div class="row">
-    <div class="col-md-12">
+<div class="col-12 mt-35">
+    <div class="row">
+        <#if showDataListFilter >
+            <form name="filters_${dataListId}" id="filters_${dataListId}" action="?" method="POST">
+                <div class="filters">
+                    <#list filterTemplates! as template>
+                        <span class="filter-cell">
+                            ${template}
+                        </span>
+                    </#list>
+                     <span class="filter-cell">
+                         <input type="submit" value="Show"/>
+                     </span>
+                </div>
+            </form>
+        </#if>
+    </div>
+</div>
+<div class="col-md-12 mt-35"">
+    <div class="row">
         <div id="${elementName!}"></div>
     </div>
 </div>
 <script>
      $(function(){
-         var renderers = $.extend($.pivotUtilities.renderers, $.pivotUtilities.c3_renderers, $.pivotUtilities.export_renderers); // Initialize Pivot Tabel Config
+         var derivers = $.pivotUtilities.derivers;
+         var renderers = $.extend($.pivotUtilities.renderers, $.pivotUtilities.plotly_renderers, $.pivotUtilities.export_renderers); // Initialize Pivot Tabel Config
 
            var data = ${data!}; // Call Data (JSON)
 
