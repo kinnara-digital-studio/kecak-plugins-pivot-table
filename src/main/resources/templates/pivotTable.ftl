@@ -28,7 +28,7 @@ form {
 </div>
 <div class="col-md-12 mt-35"">
     <div class="row">
-        <div id="${elementName!}"></div>
+        <div id="${elementName!}" class="table-responsive"></div>
     </div>
 </div>
 <script>
@@ -47,7 +47,8 @@ form {
                configobject.onRefresh = saveState; // Save when page refresh
 
                $("#${elementName!}").pivotUI( // Load with saved state
-                       data, configobject
+                       data,
+                       configobject
                        );
            } else { // If not found any saved state lets save it
                $("#${elementName!}").pivotUI(
@@ -55,6 +56,7 @@ form {
                        {
                            renderers: renderers,
                            onRefresh: saveState
+
                        }
                );
            }
