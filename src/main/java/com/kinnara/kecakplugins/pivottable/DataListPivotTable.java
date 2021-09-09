@@ -37,7 +37,6 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
     @Override
     public String getRenderPage() {
-        LogUtil.info(getClass().getName(),"getRenderPage");
         return getRenderPage("/templates/pivotTable.ftl");
     }
 
