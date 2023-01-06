@@ -4,10 +4,13 @@
 
 <script type="text/javascript" src="${request.contextPath}/plugin/com.kinnara.kecakplugins.pivottable.DataListPivotTable/js/plotly_renderers.min.js"></script>
 <style>
-form {
-    margin-bottom:.5em;
-}
+    form {
+        margin-bottom:.5em;
+    }
+    .filters { text-align:right; font-size:smaller }
+    .filter-cell{display:inline-block;padding-left:5px;}
 </style>
+
 <div class="col-12 mt-35">
     <div class="row">
         <#if showDataListFilter >

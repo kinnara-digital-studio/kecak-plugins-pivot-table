@@ -57,7 +57,10 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
     @Override
     public String getVersion() {
-        return getClass().getPackage().getImplementationVersion();
+        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
+        ResourceBundle resourceBundle = pluginManager.getPluginMessageBundle(getClassName(), "/messages/BuildNumber");
+        String buildNumber = resourceBundle.getString("buildNumber");
+        return buildNumber;
     }
 
     @Override
@@ -137,8 +140,7 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
     @Override
     public String getAceRenderPage() {
-        LogUtil.info(getClass().getName(),"getAceRenderPage");
-        return getRenderPage("/templates/pivotTable.ftl");
+        return getRenderPage("/templates/pivotTableAceAdmin.ftl");
     }
 
     /**
