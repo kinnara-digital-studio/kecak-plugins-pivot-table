@@ -13,9 +13,6 @@ import org.joget.apps.userview.model.UserviewMenu;
 import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.json.JSONArray;
-import org.kecak.apps.userview.model.AceUserviewMenu;
-import org.kecak.apps.userview.model.AdminLteUserviewMenu;
-import org.kecak.apps.userview.model.BootstrapUserviewTheme;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nonnull;
@@ -24,7 +21,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu, AdminLteUserviewMenu, Declutter {
+public class DataListPivotTable extends UserviewMenu implements Declutter {
     @Override
     public String getCategory() {
         return "Kecak";
@@ -52,7 +49,7 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
     @Override
     public String getName() {
-        return getLabel() + getVersion();
+        return getLabel();
     }
 
     @Override
@@ -133,16 +130,6 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
         }
     }
 
-    @Override
-    public String getAceJspPage(BootstrapUserviewTheme bootstrapUserviewTheme) {
-        return null;
-    }
-
-    @Override
-    public String getAceRenderPage() {
-        return getRenderPage("/templates/pivotTableAceAdmin.ftl");
-    }
-
     /**
      * Render page using template
      *
@@ -183,26 +170,6 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
         String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), templatePath,null);
         return htmlContent;
-    }
-
-    @Override
-    public String getAceDecoratedMenu() {
-        return null;
-    }
-
-    @Override
-    public String getAdminLteJspPage(BootstrapUserviewTheme bootstrapUserviewTheme) {
-        return null;
-    }
-
-    @Override
-    public String getAdminLteRenderPage() {
-        return null;
-    }
-
-    @Override
-    public String getAdminLteDecoratedMenu() {
-        return null;
     }
 
     @Nonnull
@@ -285,9 +252,4 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
                 .collect(JSONCollectors.toJSONArray());
     }
 
-    protected JSONArray getColumns(DataList dataList) {
-        return Arrays.stream(dataList.getColumns())
-                .map(DataListColumn::getName)
-                .collect(JSONCollectors.toJSONArray());
-    }
 }
