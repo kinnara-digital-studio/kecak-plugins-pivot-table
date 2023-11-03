@@ -19,6 +19,7 @@ import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -145,24 +146,26 @@ public class DataListPivotTable extends UserviewMenu implements Declutter {
         PluginManager pluginManager = (PluginManager) appContext.getBean("pluginManager");
 
         dataModel.put("className", getClassName());
-        DataList dataList = getDataList(getPropertyString("dataListId"));
+
         String elementName = getPropertyString("elementName");
         dataModel.put("elementName", elementName);
+
+        DataList dataList = getDataList(getPropertyString("dataListId"));
         if (dataList != null) {
             getCollectFilters(dataList, ((Map<String, Object>) getRequestParameters()));
             JSONArray data = getRowsAsJson(dataList);
 
             dataModel.put("data", data);
-            LogUtil.info(getClassName(), "data [" + data + "]");
 
             dataModel.put("dataListId", dataList.getId());
 
             // filter template
-            List<String> filterTemplates = new ArrayList<String>();
+            List<String> filterTemplates = new ArrayList<>();
 
             Pattern pagePattern = Pattern.compile("id='d-[0-9]+-p'|id='d-[0-9]+-ps'");
             for (String filterTemplate : dataList.getFilterTemplates()) {
-                if (!pagePattern.matcher(filterTemplate).find()) {
+                Matcher m = pagePattern.matcher(filterTemplate);
+                if (!m.find()) {
                     filterTemplates.add(filterTemplate);
                 }
             }
@@ -184,10 +187,7 @@ public class DataListPivotTable extends UserviewMenu implements Declutter {
                 .filter(Objects::nonNull)
                 .filter(Try.toNegate(DataListColumn::isHidden))
                 .distinct()
-                .collect(Collectors.toMap(DataListColumn::getLabel, c -> {
-                    final String field = c.getName();
-                    return formatValue(dataList, row, field);
-                }));
+                .collect(Collectors.toMap(DataListColumn::getLabel, c -> formatValue(dataList, row, c.getName())));
 
         String primaryKeyColumn = getPrimaryKeyColumn(dataList);
         formattedRow.putIfAbsent("_" + FormUtil.PROPERTY_ID, row.get(primaryKeyColumn));
