@@ -1,4 +1,4 @@
-package com.kinnara.kecakplugins.pivottable;
+package com.kinnarastudio.kecakplugins.pivottable;
 
 import com.kinnarastudio.commons.Declutter;
 import com.kinnarastudio.commons.Try;

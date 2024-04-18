@@ -1,4 +1,4 @@
-package com.kinnara.kecakplugins.pivottable;
+package com.kinnarastudio.kecakplugins.pivottable;
 
 import java.util.ArrayList;
 import java.util.Collection;
