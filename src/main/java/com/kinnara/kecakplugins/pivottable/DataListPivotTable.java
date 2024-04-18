@@ -1,6 +1,7 @@
 package com.kinnara.kecakplugins.pivottable;
 
 import com.kinnarastudio.commons.Declutter;
+import com.kinnarastudio.commons.Try;
 import com.kinnarastudio.commons.jsonstream.JSONCollectors;
 import org.joget.apps.app.dao.DatalistDefinitionDao;
 import org.joget.apps.app.model.AppDefinition;
@@ -13,18 +14,17 @@ import org.joget.apps.userview.model.UserviewMenu;
 import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.json.JSONArray;
-import org.kecak.apps.userview.model.AceUserviewMenu;
-import org.kecak.apps.userview.model.AdminLteUserviewMenu;
-import org.kecak.apps.userview.model.BootstrapUserviewTheme;
+import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu, AdminLteUserviewMenu, Declutter {
+public class DataListPivotTable extends UserviewMenu implements Declutter {
     @Override
     public String getCategory() {
         return "Kecak";
@@ -52,7 +52,7 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
     @Override
     public String getName() {
-        return getLabel() + getVersion();
+        return getLabel();
     }
 
     @Override
@@ -84,12 +84,12 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
     }
 
     protected DataList getDataList(String datalistId) {
-        ApplicationContext ac     = AppUtil.getApplicationContext();
-        AppDefinition      appDef = AppUtil.getCurrentAppDefinition();
+        ApplicationContext ac = AppUtil.getApplicationContext();
+        AppDefinition appDef = AppUtil.getCurrentAppDefinition();
 
-        DataListService       dataListService       = (DataListService) ac.getBean("dataListService");
+        DataListService dataListService = (DataListService) ac.getBean("dataListService");
         DatalistDefinitionDao datalistDefinitionDao = (DatalistDefinitionDao) ac.getBean("datalistDefinitionDao");
-        DatalistDefinition    datalistDefinition    = datalistDefinitionDao.loadById(datalistId, appDef);
+        DatalistDefinition datalistDefinition = datalistDefinitionDao.loadById(datalistId, appDef);
         if (datalistDefinition != null) {
             DataList dataList = dataListService.fromJson(datalistDefinition.getJson());
             return dataList;
@@ -104,43 +104,33 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
 
         Arrays.sort(columns, comparator);
         DataListColumn key = new DataListColumn();
-        for(Map.Entry<String, Object> entry : requestParameters.entrySet()) {
+        for (Map.Entry<String, Object> entry : requestParameters.entrySet()) {
             key.setName(entry.getKey());
             int index = Arrays.binarySearch(columns, key, comparator);
-            if(index >= 0) {
+            if (index >= 0) {
                 try {
                     // parameter is one of the filter
                     DataListFilterQueryObject filter = new DataListFilterQueryObject();
                     filter.setOperator("AND");
                     // this is the default pattern of datalist filter query is "lower([field]) like lower(?)"
                     filter.setQuery("lower(" + entry.getKey() + ") like lower(?)");
-                    if(entry.getValue() instanceof String[]) {
-                        String[] parameterValues = (String[])entry.getValue();
+                    if (entry.getValue() instanceof String[]) {
+                        String[] parameterValues = (String[]) entry.getValue();
                         String[] values = new String[parameterValues.length];
-                        for(int i = 0, size = parameterValues.length; i< size; i++) {
+                        for (int i = 0, size = parameterValues.length; i < size; i++) {
                             // this is the default pattern of datalist filter value is %[value]%
                             values[i] = "%" + parameterValues[i] + "%";
                         }
                         filter.setValues(values);
                     } else {
-                        filter.setValues( new String[] { "%" + entry.getValue().toString() + "%"});
+                        filter.setValues(new String[]{"%" + entry.getValue().toString() + "%"});
                     }
                     dataList.addFilterQueryObject(filter);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     LogUtil.error(getClassName(), e, "Error creating filter [" + entry.getKey() + "]");
                 }
             }
         }
-    }
-
-    @Override
-    public String getAceJspPage(BootstrapUserviewTheme bootstrapUserviewTheme) {
-        return null;
-    }
-
-    @Override
-    public String getAceRenderPage() {
-        return getRenderPage("/templates/pivotTableAceAdmin.ftl");
     }
 
     /**
@@ -152,27 +142,30 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
     protected String getRenderPage(String templatePath) {
         Map<String, Object> dataModel = new HashMap<>();
 
-        ApplicationContext appContext    = AppUtil.getApplicationContext();
-        PluginManager      pluginManager = (PluginManager) appContext.getBean("pluginManager");
+        ApplicationContext appContext = AppUtil.getApplicationContext();
+        PluginManager pluginManager = (PluginManager) appContext.getBean("pluginManager");
+
+        dataModel.put("className", getClassName());
+
+        String elementName = getPropertyString("elementName");
+        dataModel.put("elementName", elementName);
 
         DataList dataList = getDataList(getPropertyString("dataListId"));
-        String elementName = getPropertyString("elementName");
-        dataModel.put("elementName",elementName);
         if (dataList != null) {
             getCollectFilters(dataList, ((Map<String, Object>) getRequestParameters()));
             JSONArray data = getRowsAsJson(dataList);
 
             dataModel.put("data", data);
-            LogUtil.info(getClassName(),"data ["+data+"]");
 
             dataModel.put("dataListId", dataList.getId());
 
             // filter template
-            List<String> filterTemplates = new ArrayList<String>();
+            List<String> filterTemplates = new ArrayList<>();
 
             Pattern pagePattern = Pattern.compile("id='d-[0-9]+-p'|id='d-[0-9]+-ps'");
-            for(String filterTemplate : dataList.getFilterTemplates()) {
-                if(!pagePattern.matcher(filterTemplate).find()) {
+            for (String filterTemplate : dataList.getFilterTemplates()) {
+                Matcher m = pagePattern.matcher(filterTemplate);
+                if (!m.find()) {
                     filterTemplates.add(filterTemplate);
                 }
             }
@@ -181,28 +174,8 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
             dataModel.put("showDataListFilter", dataList.getFilters().length > 0);
         }
 
-        String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), templatePath,null);
+        String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), templatePath, null);
         return htmlContent;
-    }
-
-    @Override
-    public String getAceDecoratedMenu() {
-        return null;
-    }
-
-    @Override
-    public String getAdminLteJspPage(BootstrapUserviewTheme bootstrapUserviewTheme) {
-        return null;
-    }
-
-    @Override
-    public String getAdminLteRenderPage() {
-        return null;
-    }
-
-    @Override
-    public String getAdminLteDecoratedMenu() {
-        return null;
     }
 
     @Nonnull
@@ -212,11 +185,9 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
                 .map(Arrays::stream)
                 .orElseGet(Stream::empty)
                 .filter(Objects::nonNull)
-                .filter(not(DataListColumn::isHidden))
-                .map(DataListColumn::getName)
-                .filter(Objects::nonNull)
+                .filter(Try.toNegate(DataListColumn::isHidden))
                 .distinct()
-                .collect(Collectors.toMap(s -> s, s -> formatValue(dataList, row, s)));
+                .collect(Collectors.toMap(DataListColumn::getLabel, c -> formatValue(dataList, row, c.getName())));
 
         String primaryKeyColumn = getPrimaryKeyColumn(dataList);
         formattedRow.putIfAbsent("_" + FormUtil.PROPERTY_ID, row.get(primaryKeyColumn));
@@ -272,22 +243,33 @@ public class DataListPivotTable extends UserviewMenu implements AceUserviewMenu,
     }
 
     protected JSONArray getRowsAsJson(DataList dataList) {
-        return Optional.of(dataList)
+        final DataListCollection<Map<String, Object>> dataListCollection = Optional.of(dataList)
                 .map(DataList::getRows)
                 .map(collection -> (DataListCollection<Map<String, Object>>) collection)
-                .orElse(new DataListCollection<>())
-                .stream()
+                .orElseGet(DataListCollection::new);
 
-                // reformat content value
-                .map(row -> formatRow(dataList, row))
+        if (dataListCollection.isEmpty()) {
+            return Optional.of(dataList)
+                    .map(DataList::getColumns)
+                    .map(Arrays::stream)
+                    .orElseGet(Stream::empty)
+                    .map(DataListColumn::getLabel)
+                    .filter(Objects::nonNull)
+                    .map(Try.onFunction(s -> {
+                        JSONObject json = new JSONObject();
+                        json.put(s, 0);
+                        return json;
+                    }))
+                    .collect(JSONCollectors.toJSONArray());
+        } else {
+            return dataListCollection.stream()
 
-                // collect as JSON
-                .collect(JSONCollectors.toJSONArray());
+                    // reformat content value
+                    .map(row -> formatRow(dataList, row))
+
+                    // collect as JSON
+                    .collect(JSONCollectors.toJSONArray());
+        }
     }
 
-    protected JSONArray getColumns(DataList dataList) {
-        return Arrays.stream(dataList.getColumns())
-                .map(DataListColumn::getName)
-                .collect(JSONCollectors.toJSONArray());
-    }
 }

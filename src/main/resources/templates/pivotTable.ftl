@@ -1,11 +1,12 @@
-<link href="${request.contextPath}/plugin/com.kinnara.kecakplugins.pivottable.DataListPivotTable/css/pivot_custom.min.css" rel="stylesheet" type="text/css" />
-<script src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>
-<script type="text/javascript" src="${request.contextPath}/plugin/com.kinnara.kecakplugins.pivottable.DataListPivotTable/js/pivot_custom.min.js"></script>
+<link href="${request.contextPath}/plugin/${className}/css/pivot_custom.min.css" rel="stylesheet" type="text/css" />
 
-<script type="text/javascript" src="${request.contextPath}/plugin/com.kinnara.kecakplugins.pivottable.DataListPivotTable/js/plotly_renderers.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>
+<script type="text/javascript" src="${request.contextPath}/plugin/${className}/js/pivot_custom.min.js"></script>
+
+<script type="text/javascript" src="${request.contextPath}/plugin/${className}/js/plotly_renderers.min.js"></script>
 <style>
 form {
-    margin-bottom:.5em;
+    margin-bottom:.5em;name
 }
 </style>
 <div class="col-12 mt-35">
@@ -42,24 +43,18 @@ form {
            // get saved state from LocalStorage...
            var config = localStorage.getItem('pivotdatakey');
 
+           var configobject;
            if (config) { // If a saved state found in LocalStorage, then load it
-               var configobject = JSON.parse(config);
+               configobject = JSON.parse(config);
                configobject.onRefresh = saveState; // Save when page refresh
-
-               $("#${elementName!}").pivotUI( // Load with saved state
-                       data,
-                       configobject
-                       );
            } else { // If not found any saved state lets save it
-               $("#${elementName!}").pivotUI(
-                       data,
-                       {
-                           renderers: renderers,
-                           onRefresh: saveState
-
-                       }
-               );
+               configobject = {
+                  renderers: renderers,
+                  onRefresh: saveState
+              };
            }
+
+           $("#${elementName!}").pivotUI( data, configobject );
 
            // This function stores PivotTable config to LocalStorage.
            function saveState(config) {
