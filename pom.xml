@@ -8,9 +8,9 @@
     <name>kecak-plugins-pivot-table</name>
     <url>http://www.kecak.org</url>
     <scm>
-        <connection>scm:git:ssh://git@gitlab.com:kinnarastudio/kecak-plugins-pivot-table</connection>
-        <developerConnection>scm:git:ssh://git@gitlab.com:kinnarastudio/kecak-plugins-pivot-table</developerConnection>
-        <url>ssh://git@gitlab.com:kinnarastudio/kecak-plugins-pivot-table</url>
+        <connection>scm:git:ssh://github.com:kinnara-digital-studio/kecak-plugins-pivot-table.git</connection>
+        <developerConnection>scm:git:ssh://github.com:kinnara-digital-studio/kecak-plugins-pivot-table.git</developerConnection>
+        <url>ssh://github.com:kinnara-digital-studio/kecak-plugins-pivot-table.git</url>
         <tag>HEAD</tag>
     </scm>
     <build>
