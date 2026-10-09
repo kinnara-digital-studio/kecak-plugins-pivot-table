@@ -1,12 +1,12 @@
 <link href="${request.contextPath}/plugin/${className}/css/pivot_custom.min.css" rel="stylesheet" type="text/css" />
 
-<script src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>
+<script src="${request.contextPath}/plugin/${className}/node_modules/plotly.js-basic-dist-min/plotly-basic.min.js"></script>
 <script type="text/javascript" src="${request.contextPath}/plugin/${className}/js/pivot_custom.min.js"></script>
 
 <script type="text/javascript" src="${request.contextPath}/plugin/${className}/js/plotly_renderers.min.js"></script>
 <style>
 form {
-    margin-bottom:.5em;name
+    margin-bottom:.5em;
 }
 </style>
 <div class="col-12 mt-35">
@@ -27,11 +27,20 @@ form {
         </#if>
     </div>
 </div>
-<div class="col-md-12 mt-35"">
+<div class="col-md-12 mt-35">
     <div class="row">
-        <div id="${elementName!}" class="table-responsive"></div>
+        <#if isDataEmpty>
+            <div class="alert alert-warning" style="width: 100%; text-align: center; margin-top: 20px;">
+                <h4>Data not found</h4>
+                <p>There is no data available to be displayed in the Pivot Table.</p>
+            </div>
+        <#else>
+            <div id="${elementName!}" class="table-responsive"></div>
+        </#if>
     </div>
 </div>
+
+<#if !isDataEmpty>
 <script>
      $(function(){
          var derivers = $.pivotUtilities.derivers;
@@ -70,3 +79,4 @@ form {
 
      });
 </script>
+</#if>
