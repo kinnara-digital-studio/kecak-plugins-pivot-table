@@ -1,0 +1,10 @@
+{
+  "name": "kecak-plugins-pivot-table",
+  "version": "3.0.0",
+  "description": "",
+  "license": "MIT",
+  "author": "[EMAIL_ADDRESS]",
+  "dependencies": {
+    "pivottable": "^2.23.0"
+  }
+}
