@@ -35,7 +35,7 @@ form {
                 <p>There is no data available to be displayed in the Pivot Table.</p>
             </div>
         <#else>
-            <div id="${elementName!}" class="table-responsive"></div>
+            <div id="${elementName!}_pivot" class="table-responsive"></div>
         </#if>
     </div>
 </div>
@@ -63,7 +63,7 @@ form {
               };
            }
 
-           $("#${elementName!}").pivotUI( data, configobject );
+           $("#${elementName!}_pivot").pivotUI( data, configobject );
 
            // This function stores PivotTable config to LocalStorage.
            function saveState(config) {
