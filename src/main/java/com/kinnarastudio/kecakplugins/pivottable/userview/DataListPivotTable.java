@@ -99,21 +99,29 @@ public class DataListPivotTable extends UserviewMenu implements Declutter {
 
     protected void getCollectFilters(DataList dataList, Map<String, Object> requestParameters) {
         DataListColumn[] columns = dataList.getColumns();
+        if (columns == null || requestParameters == null) {
+            return;
+        }
 
-        Comparator<DataListColumn> comparator = Comparator.comparing(DataListColumn::getName);
-
-        Arrays.sort(columns, comparator);
-        DataListColumn key = new DataListColumn();
         for (Map.Entry<String, Object> entry : requestParameters.entrySet()) {
-            key.setName(entry.getKey());
-            int index = Arrays.binarySearch(columns, key, comparator);
-            if (index >= 0) {
+            String paramName = entry.getKey();
+            if (paramName == null) {
+                continue;
+            }
+
+            boolean isColumnMatch = Arrays.stream(columns)
+                    .filter(Objects::nonNull)
+                    .map(DataListColumn::getName)
+                    .filter(Objects::nonNull)
+                    .anyMatch(paramName::equals);
+
+            if (isColumnMatch) {
                 try {
                     // parameter is one of the filter
                     DataListFilterQueryObject filter = new DataListFilterQueryObject();
                     filter.setOperator("AND");
                     // this is the default pattern of datalist filter query is "lower([field]) like lower(?)"
-                    filter.setQuery("lower(" + entry.getKey() + ") like lower(?)");
+                    filter.setQuery("lower(" + paramName + ") like lower(?)");
                     if (entry.getValue() instanceof String[]) {
                         String[] parameterValues = (String[]) entry.getValue();
                         String[] values = new String[parameterValues.length];
@@ -123,11 +131,11 @@ public class DataListPivotTable extends UserviewMenu implements Declutter {
                         }
                         filter.setValues(values);
                     } else {
-                        filter.setValues(new String[]{"%" + entry.getValue().toString() + "%"});
+                        filter.setValues(new String[]{"%" + String.valueOf(entry.getValue()) + "%"});
                     }
                     dataList.addFilterQueryObject(filter);
                 } catch (Exception e) {
-                    LogUtil.error(getClassName(), e, "Error creating filter [" + entry.getKey() + "]");
+                    LogUtil.error(getClassName(), e, "Error creating filter [" + paramName + "]");
                 }
             }
         }
@@ -150,28 +158,47 @@ public class DataListPivotTable extends UserviewMenu implements Declutter {
         String elementName = getPropertyString("id");
         dataModel.put("elementName", elementName);
 
+        // Put default values to prevent FreeMarker exceptions
+        dataModel.put("dataListId", "");
+        dataModel.put("data", new JSONArray());
+        dataModel.put("showDataListFilter", false);
+        dataModel.put("filterTemplates", new String[0]);
+        dataModel.put("isDataEmpty", true);
+
         DataList dataList = getDataList(getPropertyString("dataListId"));
         if (dataList != null) {
             getCollectFilters(dataList, ((Map<String, Object>) getRequestParameters()));
+            
+            // Check if collection is empty BEFORE generating rows
+            DataListCollection<?> dataListCollection = dataList.getRows();
+            boolean isEmpty = dataListCollection == null || dataListCollection.isEmpty();
+            dataModel.put("isDataEmpty", isEmpty);
+
             JSONArray data = getRowsAsJson(dataList);
 
             dataModel.put("data", data);
-
             dataModel.put("dataListId", dataList.getId());
 
             // filter template
             List<String> filterTemplates = new ArrayList<>();
-
             Pattern pagePattern = Pattern.compile("id='d-[0-9]+-p'|id='d-[0-9]+-ps'");
-            for (String filterTemplate : dataList.getFilterTemplates()) {
-                Matcher m = pagePattern.matcher(filterTemplate);
-                if (!m.find()) {
-                    filterTemplates.add(filterTemplate);
+            
+            String[] templates = dataList.getFilterTemplates();
+            if (templates != null) {
+                for (String filterTemplate : templates) {
+                    if (filterTemplate != null) {
+                        Matcher m = pagePattern.matcher(filterTemplate);
+                        if (!m.find()) {
+                            filterTemplates.add(filterTemplate);
+                        }
+                    }
                 }
             }
 
             dataModel.put("filterTemplates", filterTemplates.toArray(new String[0]));
-            dataModel.put("showDataListFilter", dataList.getFilters().length > 0);
+            
+            DataListFilter[] filters = dataList.getFilters();
+            dataModel.put("showDataListFilter", filters != null && filters.length > 0);
         }
 
         String htmlContent = pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), templatePath, null);
@@ -180,17 +207,26 @@ public class DataListPivotTable extends UserviewMenu implements Declutter {
 
     @Nonnull
     protected Map<String, Object> formatRow(@Nonnull DataList dataList, @Nonnull Map<String, Object> row) {
-        Map<String, Object> formattedRow = Optional.of(dataList)
+        Map<String, Object> formattedRow = new HashMap<>();
+
+        Optional.of(dataList)
                 .map(DataList::getColumns)
                 .map(Arrays::stream)
                 .orElseGet(Stream::empty)
                 .filter(Objects::nonNull)
                 .filter(Try.toNegate(DataListColumn::isHidden))
-                .distinct()
-                .collect(Collectors.toMap(DataListColumn::getLabel, c -> formatValue(dataList, row, c.getName())));
+                .forEach(c -> {
+                    String label = c.getLabel();
+                    if (label != null) {
+                        formattedRow.put(label, formatValue(dataList, row, c.getName()));
+                    }
+                });
 
         String primaryKeyColumn = getPrimaryKeyColumn(dataList);
-        formattedRow.putIfAbsent("_" + FormUtil.PROPERTY_ID, row.get(primaryKeyColumn));
+        Object primaryKeyValue = row.get(primaryKeyColumn);
+        if (primaryKeyValue != null) {
+            formattedRow.putIfAbsent("_" + FormUtil.PROPERTY_ID, primaryKeyValue);
+        }
 
         return formattedRow;
     }
@@ -219,15 +255,20 @@ public class DataListPivotTable extends UserviewMenu implements Declutter {
      */
     @Nonnull
     protected String formatValue(@Nonnull final DataList dataList, @Nonnull final Map<String, Object> row, String field) {
-        String value = Optional.of(field)
+        String value = Optional.ofNullable(field)
                 .map(row::get)
                 .map(String::valueOf)
                 .orElse("");
+
+        if (field == null) {
+            return value;
+        }
 
         return Optional.of(dataList)
                 .map(DataList::getColumns)
                 .map(Arrays::stream)
                 .orElseGet(Stream::empty)
+                .filter(Objects::nonNull)
                 .filter(c -> field.equals(c.getName()))
                 .findFirst()
                 .map(column -> Optional.of(column)
@@ -249,21 +290,28 @@ public class DataListPivotTable extends UserviewMenu implements Declutter {
                 .orElseGet(DataListCollection::new);
 
         if (dataListCollection.isEmpty()) {
-            return Optional.of(dataList)
+            JSONObject dummyRow = new JSONObject();
+            Optional.of(dataList)
                     .map(DataList::getColumns)
                     .map(Arrays::stream)
                     .orElseGet(Stream::empty)
                     .map(DataListColumn::getLabel)
                     .filter(Objects::nonNull)
-                    .map(Try.onFunction(s -> {
-                        JSONObject json = new JSONObject();
-                        json.put(s, 0);
-                        return json;
-                    }))
-                    .collect(JSONCollectors.toJSONArray());
+                    .forEach(label -> {
+                        try {
+                            dummyRow.put(label, "");
+                        } catch (Exception ignored) {
+                        }
+                    });
+
+            JSONArray jsonArray = new JSONArray();
+            if (dummyRow.length() > 0) {
+                jsonArray.put(dummyRow);
+            }
+            return jsonArray;
         } else {
             return dataListCollection.stream()
-
+                    .filter(Objects::nonNull)
                     // reformat content value
                     .map(row -> formatRow(dataList, row))
 

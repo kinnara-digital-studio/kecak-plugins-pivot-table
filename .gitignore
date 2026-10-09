@@ -4,3 +4,5 @@ target/
 .DS_Store
 .settings
 .projects/
+node_modules/
+package-lock.json
