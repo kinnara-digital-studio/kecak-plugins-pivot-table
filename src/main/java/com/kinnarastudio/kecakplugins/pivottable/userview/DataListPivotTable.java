@@ -1,4 +1,4 @@
-package com.kinnarastudio.kecakplugins.pivottable;
+package com.kinnarastudio.kecakplugins.pivottable.userview;
 
 import com.kinnarastudio.commons.Declutter;
 import com.kinnarastudio.commons.Try;
@@ -6,11 +6,9 @@ import com.kinnarastudio.commons.jsonstream.JSONCollectors;
 import org.joget.apps.app.dao.DatalistDefinitionDao;
 import org.joget.apps.app.model.AppDefinition;
 import org.joget.apps.app.model.DatalistDefinition;
-import org.joget.apps.app.dao.UserviewDefinitionDao;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.*;
 import org.joget.apps.datalist.service.DataListService;
-import org.joget.apps.app.model.UserviewDefinition;
 import org.joget.apps.form.service.FormUtil;
 import org.joget.apps.userview.model.UserviewMenu;
 import org.joget.commons.util.LogUtil;
@@ -149,7 +147,7 @@ public class DataListPivotTable extends UserviewMenu implements Declutter {
 
         dataModel.put("className", getClassName());
 
-        String elementName = getPropertyString("elementName");
+        String elementName = getPropertyString("id");
         dataModel.put("elementName", elementName);
 
         DataList dataList = getDataList(getPropertyString("dataListId"));

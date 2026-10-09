@@ -2,6 +2,8 @@ package com.kinnarastudio.kecakplugins.pivottable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import com.kinnarastudio.kecakplugins.pivottable.userview.DataListPivotTable;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
